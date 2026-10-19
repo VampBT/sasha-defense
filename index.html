@@ -547,9 +547,9 @@ function update(dt){
   for(i=coins.length-1;i>=0;i--){var cn=coins[i];cn.t+=dt; // SASHA TOKENS
     if(cn.t>cn.life){coins.splice(i,1);continue;}
     cn.x+=cn.vx*dt;cn.y+=cn.vy*dt;cn.vy+=520*dt;cn.vx*=1-1.6*dt;
-    if(cn.y>GY-14){cn.y=GY-14;cn.vy*=-0.35;cn.vx*=0.8;}
+    if(cn.y>GY-60){cn.y=GY-60;cn.vy*=-0.35;cn.vx*=0.8;} // coins hover where her wings can reach — never on the dirt!
     if(state==='round'){
-      var cdx=P.x-cn.x,cdy=(P.y-50)-cn.y,cdd=Math.sqrt(cdx*cdx+cdy*cdy),pull=150*S.magnet;
+      var cdx=P.x-cn.x,cdy=(P.y-50)-cn.y,cdd=Math.sqrt(cdx*cdx+cdy*cdy),pull=150*S.magnet*(mode==='blitz'?2:1); // blitz: double magnet — coins vacuum to her in the chaos
       if(cdd>1&&cdd<pull){var ps=Math.min(cdd,560)*dt;cn.x+=cdx/cdd*ps;cn.y+=cdy/cdd*ps;}
       if(cdd<46){coins.splice(i,1);S.coins++;sPop();
         var wf=beast>=100;beast=Math.min(100,beast+1); // tokens nudge beast mode along
@@ -573,17 +573,16 @@ function update(dt){
     if(Math.abs(dx)>10){var sp=S.speed*(badass>0?1.25:1);P.x+=Math.sign(dx)*Math.min(Math.abs(dx),sp*dt);P.face=dx>0?1:-1;}
   }
   P.x=Math.max(40,Math.min(WW-40,P.x));
-  // FLYING: hover spring around cruise altitude — dive into the dirt to LAND
+  // FLYING: hover spring around cruise altitude — she NEVER touches the ground (angel wings!)
   var CRUISE=GY-170;
-  if(P.onGround){P.y=GY;P.vy=0;}
-  else{
+  {
     var sk=P.diving>0?0.22:1; // dive-bombs punch through the hover spring
     if(P.diving>0)P.diving-=dt;
     P.vy+=((CRUISE-P.y)*22*sk-P.vy*5*sk)*dt;
     P.y+=P.vy*dt;
     if(P.y<GY-430){P.y=GY-430;P.vy=Math.max(0,P.vy);}
-    if(P.y>=GY-6){P.y=GY;P.vy=0;P.onGround=true; // touchdown!
-      burst(P.x,GY,'#8a7a5a',6);}
+    if(P.y>GY-80){P.y=GY-80;P.vy=Math.min(P.vy,0); // hover floor — wings keep her airborne!
+      P.onGround=false;}
   }
   if(P.flapCd>0)P.flapCd-=dt;
   if(beastMode>0){beastMode-=dt; // BEAST MODE: burning aura
@@ -716,6 +715,7 @@ function update(dt){
       if(marching){
         if(mode==='blitz')en.x+=Math.sign(P.x-en.x)*esp*dt; // blitz: the horde hunts SASHA!
         else if(mode==='surv')en.x+=en.dir*esp*dt; // survival: the horde marches on the doghouse from BOTH sides
+        else if(Math.abs(P.x-en.x)<350)en.x+=Math.sign(P.x-en.x)*esp*dt; // campaign: nearby enemies hunt SASHA, not just the house!
         else en.x-=esp*dt;}
       if(en.fly){var ty=en.x<800?GY-140:en.baseY;
         en.y+=(ty-en.y)*Math.min(1,dt*2)+Math.sin(en.ph*2)*30*dt+(en.type==='fly'?Math.sin(en.ph*5)*70*dt:0);}
@@ -930,10 +930,10 @@ function update(dt){
     pickDraft();state='draft';sWave();
   }
 }
-function dropCoins(x,y,n){for(var ci=0;ci<n;ci++)coins.push({x:x+(Math.random()-0.5)*30,y:y,vx:(Math.random()-0.5)*260,vy:-160-Math.random()*170,t:0,life:9});} // SASHA TOKENS!
+function dropCoins(x,y,n){for(var ci=0;ci<n;ci++)coins.push({x:x+(Math.random()-0.5)*30,y:y,vx:(Math.random()-0.5)*260,vy:-160-Math.random()*170,t:0,life:(mode==='blitz'?15:9)});} // SASHA TOKENS! (blitz: longer life — 60s of chaos)
 function killEnemy(i){
   var en=enemies[i];enemies.splice(i,1);kills++;sPop();
-  dropCoins(en.x,ecy(en),en.mummyboss?12:en.boss?8:(Math.random()<0.45?1:0)); // sasha tokens fly out of kills
+  dropCoins(en.x,ecy(en),en.mummyboss?12:en.boss?8:(Math.random()<(mode==='blitz'?1:0.45)?1:0)); // sasha tokens fly out of kills (blitz: EVERY kill drops one)
   var wasFull=beast>=100;beast=Math.min(100,beast+2); // BEAST MODE charges with kills
   if(!wasFull&&beast>=100){floatTxt(P.x,P.y-210,'BEAST READY! TAP THE PAW!','#ff9c3a');sBadass();}
   burst(en.x,ecy(en),en.boss?'#ffd94d':'#ffffff',en.boss?20:8);

@@ -547,7 +547,7 @@ function update(dt){
   for(i=coins.length-1;i>=0;i--){var cn=coins[i];cn.t+=dt; // SASHA TOKENS
     if(cn.t>cn.life){coins.splice(i,1);continue;}
     cn.x+=cn.vx*dt;cn.y+=cn.vy*dt;cn.vy+=520*dt;cn.vx*=1-1.6*dt;
-    if(cn.y>GY-60){cn.y=GY-60;cn.vy*=-0.35;cn.vx*=0.8;} // coins hover where her wings can reach — never on the dirt!
+    if(cn.y>GY-130){cn.y=GY-130;cn.vy*=-0.35;cn.vx*=0.8;} // coins hover where her wings can reach — never on the dirt!
     if(state==='round'){
       var cdx=P.x-cn.x,cdy=(P.y-50)-cn.y,cdd=Math.sqrt(cdx*cdx+cdy*cdy),pull=150*S.magnet*(mode==='blitz'?2:1); // blitz: double magnet — coins vacuum to her in the chaos
       if(cdd>1&&cdd<pull){var ps=Math.min(cdd,560)*dt;cn.x+=cdx/cdd*ps;cn.y+=cdy/cdd*ps;}
